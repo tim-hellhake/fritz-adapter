@@ -1,0 +1,63 @@
+{
+  "name": "fritz-adapter",
+  "display_name": "Fritz!",
+  "version": "0.1.0",
+  "description": "Connect your Fritz! devices",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tim-hellhake/fritz-adapter.git"
+  },
+  "author": "Tim Hellhake",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/tim-hellhake/fritz-adapter/issues"
+  },
+  "homepage": "https://github.com/tim-hellhake/fritz-adapter#readme",
+  "files": [
+    "LICENSE",
+    "SHA256SUMS",
+    "index.js",
+    "fritz-adapter.js"
+  ],
+  "moziot": {
+    "api": {
+      "min": 2,
+      "max": 2
+    },
+    "plugin": true,
+    "exec": "{nodeLoader} {path}",
+    "schema": {
+      "type": "object",
+      "required": [
+        "username",
+        "password"
+      ],
+      "properties": {
+        "username": {
+          "type": "string",
+          "title": "The username"
+        },
+        "password": {
+          "type": "string",
+          "title": "The password"
+        },
+        "host": {
+          "type": "string",
+          "title": "The hostname of your Fritz!Box"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "fritzapi": "^0.10.5"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0"
+  }
+}
