@@ -14,28 +14,42 @@ const {
   Property
 } = require('gateway-addon');
 
-class FritzDect200 extends Device {
-  constructor(adapter, client, device) {
-    super(adapter, device.identifier);
-    this['@context'] = 'https://iot.mozilla.org/schemas/';
-    this['@type'] = ['SmartPlug'];
-    this.name = device.name;
-    this.description = device.productname;
-    this.client = client;
-    this.device = device;
-
-    this.addProperty({
+class SwitchProperty extends Property {
+  constructor(device, client) {
+    super(device, 'state', {
       type: 'boolean',
       '@type': 'OnOffProperty',
       title: 'State',
-      description: 'The state of the switch',
-      readonly: true
+      description: 'The state of the switch'
     });
+
+    this.client = client;
   }
 
-  addProperty(description) {
-    const property = new Property(this, description.title, description);
-    this.properties.set(description.title, property);
+  async setValue(value) {
+    console.log(value);
+    super.setValue(value);
+    const ain = this.device.deviceInfo.identifier;
+
+    if (value === true) {
+      await this.client.setSwitchOn(ain);
+    } else {
+      await this.client.setSwitchOff(ain);
+    }
+  }
+}
+
+class FritzDect200 extends Device {
+  constructor(adapter, client, deviceInfo) {
+    super(adapter, deviceInfo.identifier);
+    this['@context'] = 'https://iot.mozilla.org/schemas/';
+    this['@type'] = ['SmartPlug'];
+    this.name = deviceInfo.name;
+    this.description = deviceInfo.productname;
+    this.client = client;
+    this.deviceInfo = deviceInfo;
+    this.switchProperty = new SwitchProperty(this, client);
+    this.properties.set(this.switchProperty.name, this.switchProperty);
   }
 
   startPolling(interval) {
@@ -46,14 +60,9 @@ class FritzDect200 extends Device {
   }
 
   async poll() {
-    const device = await this.client.getDevice(this.device.identifier);
-    this.updateValue('State', device.switch.state === '1');
-  }
-
-  updateValue(name, value) {
-    const property = this.properties.get(name);
-    property.setCachedValue(value);
-    this.notifyPropertyChanged(property);
+    const info = await this.client.getDevice(this.deviceInfo.identifier);
+    this.switchProperty.setCachedValue(info.switch.state === '1');
+    this.notifyPropertyChanged(this.switchProperty);
   }
 }
 
@@ -82,15 +91,15 @@ class FritzAdapter extends Adapter {
   }
 
   async discover(client) {
-    const devices = await client.getDeviceList();
+    const deviceInfos = await client.getDeviceList();
 
-    for (const device of devices) {
+    for (const deviceInfo of deviceInfos) {
       // eslint-disable-next-line max-len
-      if (device.productname === 'FRITZ!DECT 200') {
+      if (deviceInfo.productname === 'FRITZ!DECT 200') {
         // eslint-disable-next-line max-len
-        console.log(`Detected new ${device.productname} with ain ${device.identifier}`);
+        console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
         // eslint-disable-next-line max-len
-        const fritzDect200 = new FritzDect200(this, client, device);
+        const fritzDect200 = new FritzDect200(this, client, deviceInfo);
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(1);
       }
