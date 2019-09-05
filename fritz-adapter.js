@@ -66,6 +66,56 @@ class FritzDect200 extends Device {
   }
 }
 
+class SetTemperatureProperty extends Property {
+  constructor(device, client) {
+    super(device, 'state', {
+      type: 'number',
+      unit: 'degree celsius',
+      title: 'Temperature',
+      description: 'The set temperature'
+    });
+
+    this.client = client;
+  }
+
+  async setValue(value) {
+    super.setValue(value);
+    const ain = this.device.deviceInfo.identifier;
+    await this.client.setTempTarget(ain, value);
+  }
+}
+
+class FritzDect301 extends Device {
+  constructor(adapter, client, deviceInfo) {
+    super(adapter, deviceInfo.identifier);
+    this['@context'] = 'https://iot.mozilla.org/schemas/';
+    this.name = deviceInfo.name;
+    this.description = deviceInfo.productname;
+    this.client = client;
+    this.deviceInfo = deviceInfo;
+    this.setTemperatureProperty = new SetTemperatureProperty(this, client);
+    // eslint-disable-next-line max-len
+    this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
+  }
+
+  startPolling(interval) {
+    this.poll();
+    this.timer = setInterval(() => {
+      this.poll();
+    }, interval * 1000);
+  }
+
+  async poll() {
+    // eslint-disable-next-line max-len
+    const setTemperature = await this.client.getTempTarget(this.deviceInfo.identifier);
+
+    if (setTemperature !== this.setTemperatureProperty.value) {
+      this.setTemperatureProperty.setCachedValue(setTemperature);
+      this.notifyPropertyChanged(this.setTemperatureProperty);
+    }
+  }
+}
+
 class FritzAdapter extends Adapter {
   constructor(addonManager, manifest) {
     super(addonManager, FritzAdapter.name, manifest.name);
@@ -102,6 +152,14 @@ class FritzAdapter extends Adapter {
         const fritzDect200 = new FritzDect200(this, client, deviceInfo);
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(1);
+      }
+
+      if (deviceInfo.productname === 'FRITZ!DECT 301') {
+        // eslint-disable-next-line max-len
+        console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
+        const fritzDect301 = new FritzDect301(this, client, deviceInfo);
+        this.handleDeviceAdded(fritzDect301);
+        fritzDect301.startPolling(1);
       }
     }
   }
