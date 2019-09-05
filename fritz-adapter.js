@@ -148,7 +148,6 @@ class FritzAdapter extends Adapter {
       if (deviceInfo.productname === 'FRITZ!DECT 200') {
         // eslint-disable-next-line max-len
         console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-        // eslint-disable-next-line max-len
         const fritzDect200 = new FritzDect200(this, client, deviceInfo);
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(1);
