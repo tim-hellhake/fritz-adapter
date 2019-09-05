@@ -159,7 +159,7 @@ class FritzAdapter extends Adapter {
     for (const thermostatAin of thermostatAins) {
       const deviceInfo = await client.getDevice(thermostatAin);
       // eslint-disable-next-line max-len
-      console.log(`DDDetected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
+      console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
       const fritzThermostat = new FritzThermostat(this, client, deviceInfo);
       this.handleDeviceAdded(fritzThermostat);
       fritzThermostat.startPolling(1);
