@@ -85,7 +85,7 @@ class SetTemperatureProperty extends Property {
   }
 }
 
-class FritzDect301 extends Device {
+class FritzThermostat extends Device {
   constructor(adapter, client, deviceInfo) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
@@ -153,14 +153,17 @@ class FritzAdapter extends Adapter {
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(1);
       }
+    }
 
-      if (deviceInfo.productname === 'FRITZ!DECT 301') {
-        // eslint-disable-next-line max-len
-        console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-        const fritzDect301 = new FritzDect301(this, client, deviceInfo);
-        this.handleDeviceAdded(fritzDect301);
-        fritzDect301.startPolling(1);
-      }
+    const thermostatAins = await client.getThermostatList();
+
+    for (const thermostatAin of thermostatAins) {
+      const deviceInfo = await client.getDevice(thermostatAin);
+      // eslint-disable-next-line max-len
+      console.log(`DDDetected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
+      const fritzThermostat = new FritzThermostat(this, client, deviceInfo);
+      this.handleDeviceAdded(fritzThermostat);
+      fritzThermostat.startPolling(1);
     }
   }
 }
