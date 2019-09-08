@@ -14,8 +14,12 @@ const {
   Property
 } = require('gateway-addon');
 
+function stdout() {
+  console.log.apply(console, arguments);
+}
+
 class SwitchProperty extends Property {
-  constructor(device, client) {
+  constructor(device, client, log) {
     super(device, 'state', {
       type: 'boolean',
       '@type': 'OnOffProperty',
@@ -24,23 +28,30 @@ class SwitchProperty extends Property {
     });
 
     this.client = client;
+    this.log = log;
   }
 
   async setValue(value) {
-    console.log(value);
-    super.setValue(value);
-    const ain = this.device.deviceInfo.identifier;
+    try {
+      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
+      super.setValue(value);
+      const ain = this.device.deviceInfo.identifier;
 
-    if (value === true) {
-      await this.client.setSwitchOn(ain);
-    } else {
-      await this.client.setSwitchOff(ain);
+      if (value === true) {
+        await this.client.setSwitchOn(ain);
+        this.log('Set switch on');
+      } else {
+        await this.client.setSwitchOff(ain);
+        this.log('Set switch off');
+      }
+    } catch (e) {
+      this.log(`Could not set value: ${e}`);
     }
   }
 }
 
 class FritzDect200 extends Device {
-  constructor(adapter, client, deviceInfo) {
+  constructor(adapter, client, deviceInfo, log) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['SmartPlug'];
@@ -48,7 +59,8 @@ class FritzDect200 extends Device {
     this.description = deviceInfo.productname;
     this.client = client;
     this.deviceInfo = deviceInfo;
-    this.switchProperty = new SwitchProperty(this, client);
+    this.log = log;
+    this.switchProperty = new SwitchProperty(this, client, log);
     this.properties.set(this.switchProperty.name, this.switchProperty);
   }
 
@@ -67,7 +79,7 @@ class FritzDect200 extends Device {
 }
 
 class SetTemperatureProperty extends Property {
-  constructor(device, client) {
+  constructor(device, client, log) {
     super(device, 'state', {
       type: 'number',
       unit: 'degree celsius',
@@ -76,24 +88,31 @@ class SetTemperatureProperty extends Property {
     });
 
     this.client = client;
+    this.log = log;
   }
 
   async setValue(value) {
-    super.setValue(value);
-    const ain = this.device.deviceInfo.identifier;
-    await this.client.setTempTarget(ain, value);
+    try {
+      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
+      super.setValue(value);
+      const ain = this.device.deviceInfo.identifier;
+      await this.client.setTempTarget(ain, value);
+    } catch (e) {
+      this.log(`Could not set value: ${e}`);
+    }
   }
 }
 
 class FritzThermostat extends Device {
-  constructor(adapter, client, deviceInfo) {
+  constructor(adapter, client, deviceInfo, log) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
     this.client = client;
     this.deviceInfo = deviceInfo;
-    this.setTemperatureProperty = new SetTemperatureProperty(this, client);
+    this.log = log;
+    this.setTemperatureProperty = new SetTemperatureProperty(this, client, log);
     // eslint-disable-next-line max-len
     this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
   }
@@ -121,10 +140,17 @@ class FritzAdapter extends Adapter {
     super(addonManager, FritzAdapter.name, manifest.name);
     addonManager.addAdapter(this);
     const {
+      debug,
       username,
       password,
       host
     } = manifest.moziot.config;
+
+    if (debug) {
+      this.log = stdout;
+    } else {
+      this.log = () => { };
+    }
 
     if (!username) {
       console.warn('Please specify username in the config');
@@ -148,7 +174,8 @@ class FritzAdapter extends Adapter {
       if (deviceInfo.productname === 'FRITZ!DECT 200') {
         // eslint-disable-next-line max-len
         console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-        const fritzDect200 = new FritzDect200(this, client, deviceInfo);
+        // eslint-disable-next-line max-len
+        const fritzDect200 = new FritzDect200(this, client, deviceInfo, this.log);
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(1);
       }
@@ -160,7 +187,8 @@ class FritzAdapter extends Adapter {
       const deviceInfo = await client.getDevice(thermostatAin);
       // eslint-disable-next-line max-len
       console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-      const fritzThermostat = new FritzThermostat(this, client, deviceInfo);
+      // eslint-disable-next-line max-len
+      const fritzThermostat = new FritzThermostat(this, client, deviceInfo, this.log);
       this.handleDeviceAdded(fritzThermostat);
       fritzThermostat.startPolling(1);
     }

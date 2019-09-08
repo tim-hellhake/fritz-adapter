@@ -31,13 +31,21 @@
     },
     "plugin": true,
     "exec": "{nodeLoader} {path}",
+    "config": {
+      "debug": false
+    },
     "schema": {
       "type": "object",
       "required": [
+        "debug",
         "username",
         "password"
       ],
       "properties": {
+        "debug": {
+          "type": "boolean",
+          "title": "Enable debug logs"
+        },
         "username": {
           "type": "string",
           "title": "The username"
