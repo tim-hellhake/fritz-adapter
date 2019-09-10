@@ -143,7 +143,8 @@ class FritzAdapter extends Adapter {
       debug,
       username,
       password,
-      host
+      host,
+      pollInterval
     } = manifest.moziot.config;
 
     if (debug) {
@@ -163,10 +164,10 @@ class FritzAdapter extends Adapter {
     }
 
     const client = new Fritz(username, password, host);
-    this.discover(client);
+    this.discover(client, pollInterval);
   }
 
-  async discover(client) {
+  async discover(client, pollInterval) {
     const deviceInfos = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
@@ -177,7 +178,7 @@ class FritzAdapter extends Adapter {
         // eslint-disable-next-line max-len
         const fritzDect200 = new FritzDect200(this, client, deviceInfo, this.log);
         this.handleDeviceAdded(fritzDect200);
-        fritzDect200.startPolling(1);
+        fritzDect200.startPolling(pollInterval);
       }
     }
 
@@ -190,7 +191,7 @@ class FritzAdapter extends Adapter {
       // eslint-disable-next-line max-len
       const fritzThermostat = new FritzThermostat(this, client, deviceInfo, this.log);
       this.handleDeviceAdded(fritzThermostat);
-      fritzThermostat.startPolling(1);
+      fritzThermostat.startPolling(pollInterval);
     }
   }
 }

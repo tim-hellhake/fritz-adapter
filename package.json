@@ -32,14 +32,16 @@
     "plugin": true,
     "exec": "{nodeLoader} {path}",
     "config": {
-      "debug": false
+      "debug": false,
+      "pollInterval": 5
     },
     "schema": {
       "type": "object",
       "required": [
         "debug",
         "username",
-        "password"
+        "password",
+        "pollInterval"
       ],
       "properties": {
         "debug": {
@@ -57,6 +59,10 @@
         "host": {
           "type": "string",
           "title": "The hostname of your Fritz!Box"
+        },
+        "pollInterval": {
+          "type": "integer",
+          "title": "The number of seconds between two read requests"
         }
       }
     }
