@@ -22,7 +22,8 @@
     "LICENSE",
     "SHA256SUMS",
     "index.js",
-    "fritz-adapter.js"
+    "fritz-adapter.js",
+    "manifest.json"
   ],
   "moziot": {
     "api": {
