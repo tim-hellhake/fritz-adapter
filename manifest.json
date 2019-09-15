@@ -5,7 +5,7 @@
     "version": "0.4.1",
     "author": "Tim Hellhake",
     "description": "Connect your Fritz! devices",
-    "homepage_url": "git+https://github.com/tim-hellhake/fritz-adapter.git",
+    "homepage_url": "https://github.com/tim-hellhake/fritz-adapter#readme",
     "license": "MPL-2.0",
     "manifest_version": 1,
     "gateway_specific_settings": {
