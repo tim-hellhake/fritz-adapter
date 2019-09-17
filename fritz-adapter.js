@@ -81,7 +81,10 @@ class FritzDect200 extends Device {
 class SetTemperatureProperty extends Property {
   constructor(device, client, log) {
     super(device, 'state', {
+      '@type': 'LevelProperty',
       type: 'number',
+      minimum: 8,
+      maximum: 28,
       unit: 'degree celsius',
       title: 'Temperature',
       description: 'The set temperature'
