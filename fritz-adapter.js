@@ -78,15 +78,29 @@ class FritzDect200 extends Device {
   }
 }
 
+class TemperatureProperty extends Property {
+  constructor(device) {
+    super(device, 'temperature', {
+      type: 'number',
+      '@type': 'TemperatureProperty',
+      unit: 'degree celsius',
+      multipleOf: 0.5,
+      title: 'Temperature',
+      description: 'The ambient temperature',
+      readOnly: true
+    });
+  }
+}
+
 class SetTemperatureProperty extends Property {
   constructor(device, client, log) {
-    super(device, 'state', {
+    super(device, 'settemperature', {
       '@type': 'LevelProperty',
       type: 'number',
       minimum: 8,
       maximum: 28,
       unit: 'degree celsius',
-      title: 'Temperature',
+      title: 'Set Temperature',
       description: 'The set temperature'
     });
 
@@ -110,6 +124,7 @@ class FritzThermostat extends Device {
   constructor(adapter, client, deviceInfo, log) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
+    this['@type'] = ['TemperatureSensor'];
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
     this.client = client;
@@ -118,6 +133,9 @@ class FritzThermostat extends Device {
     this.setTemperatureProperty = new SetTemperatureProperty(this, client, log);
     // eslint-disable-next-line max-len
     this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
+    this.temperatureProperty = new TemperatureProperty(this);
+    // eslint-disable-next-line max-len
+    this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
   }
 
   startPolling(interval) {
@@ -128,6 +146,11 @@ class FritzThermostat extends Device {
   }
 
   async poll() {
+    // eslint-disable-next-line max-len
+    const temperature = await this.client.getTemperature(this.deviceInfo.identifier);
+    this.temperatureProperty.setCachedValue(temperature);
+    this.notifyPropertyChanged(this.temperatureProperty);
+
     // eslint-disable-next-line max-len
     const setTemperature = await this.client.getTempTarget(this.deviceInfo.identifier);
 
