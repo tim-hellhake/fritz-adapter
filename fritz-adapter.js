@@ -99,6 +99,7 @@ class SetTemperatureProperty extends Property {
       type: 'number',
       minimum: 8,
       maximum: 28,
+      multipleOf: 0.5,
       unit: 'degree celsius',
       title: 'Set Temperature',
       description: 'The set temperature'
