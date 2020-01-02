@@ -73,8 +73,7 @@ class FritzDect200 extends Device {
 
   async poll() {
     const info = await this.client.getDevice(this.deviceInfo.identifier);
-    this.switchProperty.setCachedValue(info.switch.state === '1');
-    this.notifyPropertyChanged(this.switchProperty);
+    this.switchProperty.setCachedValueAndNotify(info.switch.state === '1');
   }
 }
 
@@ -149,16 +148,11 @@ class FritzThermostat extends Device {
   async poll() {
     // eslint-disable-next-line max-len
     const temperature = await this.client.getTemperature(this.deviceInfo.identifier);
-    this.temperatureProperty.setCachedValue(temperature);
-    this.notifyPropertyChanged(this.temperatureProperty);
+    this.temperatureProperty.setCachedValueAndNotify(temperature);
 
     // eslint-disable-next-line max-len
     const setTemperature = await this.client.getTempTarget(this.deviceInfo.identifier);
-
-    if (setTemperature !== this.setTemperatureProperty.value) {
-      this.setTemperatureProperty.setCachedValue(setTemperature);
-      this.notifyPropertyChanged(this.setTemperatureProperty);
-    }
+    this.setTemperatureProperty.setCachedValueAndNotify(setTemperature);
   }
 }
 
