@@ -3,10 +3,10 @@
   "display_name": "Fritz!",
   "version": "1.0.1",
   "description": "Connect your Fritz! devices",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint ."
+    "build": "tsc -p ."
   },
   "repository": {
     "type": "git",
@@ -21,9 +21,9 @@
   "files": [
     "LICENSE",
     "SHA256SUMS",
-    "index.js",
-    "fritz-adapter.js",
-    "manifest.json"
+    "manifest.json",
+    "lib/index.js",
+    "lib/fritz-adapter.js"
   ],
   "moziot": {
     "api": {
@@ -72,7 +72,6 @@
     "fritzapi": "^0.10.7"
   },
   "devDependencies": {
-    "babel-eslint": "^10.0.3",
-    "eslint": "^6.8.0"
+    "typescript": "^3.7.4"
   }
 }

@@ -6,32 +6,21 @@
 
 'use strict';
 
-const Fritz = require('fritzapi').Fritz;
+import { Fritz } from 'fritzapi';
 
-const {
-  Adapter,
-  Device,
-  Property
-} = require('gateway-addon');
+import { Adapter, Device, Property } from 'gateway-addon';
 
-function stdout() {
-  console.log.apply(console, arguments);
-}
-
-class SwitchProperty extends Property {
-  constructor(device, client, log) {
+export class SwitchProperty extends Property {
+  constructor(private device: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'state', {
       type: 'boolean',
       '@type': 'OnOffProperty',
       title: 'State',
       description: 'The state of the switch'
     });
-
-    this.client = client;
-    this.log = log;
   }
 
-  async setValue(value) {
+  async setValue(value: boolean) {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
       super.setValue(value);
@@ -51,22 +40,22 @@ class SwitchProperty extends Property {
 }
 
 class FritzDect200 extends Device {
-  constructor(adapter, client, deviceInfo, log) {
+  private switchProperty: SwitchProperty;
+
+  constructor(adapter: Adapter, private client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['SmartPlug'];
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
-    this.client = client;
-    this.deviceInfo = deviceInfo;
-    this.log = log;
     this.switchProperty = new SwitchProperty(this, client, log);
     this.properties.set(this.switchProperty.name, this.switchProperty);
   }
 
-  startPolling(interval) {
+  startPolling(interval: number) {
     this.poll();
-    this.timer = setInterval(() => {
+
+    setInterval(() => {
       this.poll();
     }, interval * 1000);
   }
@@ -78,7 +67,7 @@ class FritzDect200 extends Device {
 }
 
 class TemperatureProperty extends Property {
-  constructor(device) {
+  constructor(device: Device) {
     super(device, 'temperature', {
       type: 'number',
       '@type': 'TemperatureProperty',
@@ -92,7 +81,7 @@ class TemperatureProperty extends Property {
 }
 
 class SetTemperatureProperty extends Property {
-  constructor(device, client, log) {
+  constructor(private device: FritzThermostat, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'settemperature', {
       '@type': 'LevelProperty',
       type: 'number',
@@ -103,12 +92,9 @@ class SetTemperatureProperty extends Property {
       title: 'Set Temperature',
       description: 'The set temperature'
     });
-
-    this.client = client;
-    this.log = log;
   }
 
-  async setValue(value) {
+  async setValue(value: number) {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
       super.setValue(value);
@@ -121,15 +107,15 @@ class SetTemperatureProperty extends Property {
 }
 
 class FritzThermostat extends Device {
-  constructor(adapter, client, deviceInfo, log) {
+  private setTemperatureProperty: SetTemperatureProperty;
+  private temperatureProperty: TemperatureProperty;
+
+  constructor(adapter: Adapter, private client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
-    this.client = client;
-    this.deviceInfo = deviceInfo;
-    this.log = log;
     this.setTemperatureProperty = new SetTemperatureProperty(this, client, log);
     // eslint-disable-next-line max-len
     this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
@@ -138,9 +124,9 @@ class FritzThermostat extends Device {
     this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
   }
 
-  startPolling(interval) {
+  startPolling(interval: number) {
     this.poll();
-    this.timer = setInterval(() => {
+    setInterval(() => {
       this.poll();
     }, interval * 1000);
   }
@@ -156,8 +142,10 @@ class FritzThermostat extends Device {
   }
 }
 
-class FritzAdapter extends Adapter {
-  constructor(addonManager, manifest) {
+export class FritzAdapter extends Adapter {
+  private log: (message?: any, ...optionalParams: any[]) => void;
+
+  constructor(addonManager: any, manifest: any) {
     super(addonManager, FritzAdapter.name, manifest.name);
     addonManager.addAdapter(this);
     const {
@@ -169,7 +157,7 @@ class FritzAdapter extends Adapter {
     } = manifest.moziot.config;
 
     if (debug) {
-      this.log = stdout;
+      this.log = console.log;
     } else {
       this.log = () => { };
     }
@@ -188,7 +176,7 @@ class FritzAdapter extends Adapter {
     this.discover(client, pollInterval);
   }
 
-  async discover(client, pollInterval) {
+  async discover(client: Fritz, pollInterval: number) {
     const deviceInfos = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
@@ -216,5 +204,3 @@ class FritzAdapter extends Adapter {
     }
   }
 }
-
-module.exports = FritzAdapter;

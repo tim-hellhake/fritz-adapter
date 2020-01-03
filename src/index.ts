@@ -6,7 +6,6 @@
 
 'use strict';
 
-const FritzAdapter = require('./fritz-adapter');
+import { FritzAdapter } from './fritz-adapter';
 
-module.exports =
-    (addonManager, manifest) => new FritzAdapter(addonManager, manifest);
+export = (addonManager: any, manifest: any) => new FritzAdapter(addonManager, manifest);
