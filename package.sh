@@ -2,6 +2,7 @@
 
 rm -rf node_modules
 npm install --production
+rm -rf node_modules/.bin
 
 sha256sum package.json manifest.json lib/*.js LICENSE README.md > SHA256SUMS
 find node_modules -type f -exec sha256sum {} \; >> SHA256SUMS
