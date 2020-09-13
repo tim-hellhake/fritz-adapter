@@ -25,49 +25,6 @@
     "lib/index.js",
     "lib/fritz-adapter.js"
   ],
-  "moziot": {
-    "api": {
-      "min": 2,
-      "max": 2
-    },
-    "plugin": true,
-    "exec": "{nodeLoader} {path}",
-    "config": {
-      "debug": false,
-      "pollInterval": 5
-    },
-    "schema": {
-      "type": "object",
-      "required": [
-        "debug",
-        "username",
-        "password",
-        "pollInterval"
-      ],
-      "properties": {
-        "debug": {
-          "type": "boolean",
-          "title": "Enable debug logs"
-        },
-        "username": {
-          "type": "string",
-          "title": "The username"
-        },
-        "password": {
-          "type": "string",
-          "title": "The password"
-        },
-        "host": {
-          "type": "string",
-          "title": "The hostname of your Fritz!Box"
-        },
-        "pollInterval": {
-          "type": "integer",
-          "title": "The number of seconds between two read requests"
-        }
-      }
-    }
-  },
   "dependencies": {
     "fritzapi": "^0.11.0"
   },
