@@ -14,6 +14,7 @@ The default for `host` is `http://fritz.box`.
 
 ## Supported devices
 - FRITZ!DECT 200
+- FRITZ!DECT 301
 
 ## Teach in device
 - Go to the _Add things_
