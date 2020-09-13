@@ -1,7 +1,7 @@
 {
   "name": "fritz-adapter",
   "display_name": "Fritz!",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Connect your Fritz! devices",
   "main": "lib/index.js",
   "scripts": {
