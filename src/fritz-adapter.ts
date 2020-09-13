@@ -180,10 +180,10 @@ export class FritzAdapter extends Adapter {
     const deviceInfos = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
+      console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
+
       // eslint-disable-next-line max-len
       if (deviceInfo.productname === 'FRITZ!DECT 200' || deviceInfo.productname === 'FRITZ!DECT 210') {
-        // eslint-disable-next-line max-len
-        console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
         // eslint-disable-next-line max-len
         const fritzDect200 = new FritzDect200(this, client, deviceInfo, this.log);
         this.handleDeviceAdded(fritzDect200);
