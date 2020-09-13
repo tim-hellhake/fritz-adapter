@@ -43,7 +43,7 @@
                 },
                 "host": {
                     "type": "string",
-                    "title": "The hostname of your Fritz!Box"
+                    "title": "The hostname of your Fritz!Box (default is http://fritz.box)"
                 },
                 "pollInterval": {
                     "type": "integer",
