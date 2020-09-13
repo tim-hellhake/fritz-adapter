@@ -181,7 +181,7 @@ export class FritzAdapter extends Adapter {
 
     for (const deviceInfo of deviceInfos) {
       // eslint-disable-next-line max-len
-      if (deviceInfo.productname === 'FRITZ!DECT 200') {
+      if (deviceInfo.productname === 'FRITZ!DECT 200' || deviceInfo.productname === 'FRITZ!DECT 210') {
         // eslint-disable-next-line max-len
         console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
         // eslint-disable-next-line max-len
