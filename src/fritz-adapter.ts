@@ -41,15 +41,20 @@ export class SwitchProperty extends Property {
 
 class FritzDect200 extends Device {
   private switchProperty: SwitchProperty;
+  private temperatureProperty: TemperatureProperty;
 
   constructor(adapter: Adapter, private client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
-    this['@type'] = ['SmartPlug'];
+    this['@type'] = ['SmartPlug', 'TemperatureSensor'];
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
+
     this.switchProperty = new SwitchProperty(this, client, log);
     this.properties.set(this.switchProperty.name, this.switchProperty);
+
+    this.temperatureProperty = new TemperatureProperty(this);
+    this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
   }
 
   startPolling(interval: number) {
@@ -63,6 +68,9 @@ class FritzDect200 extends Device {
   async poll() {
     const info = await this.client.getDevice(this.deviceInfo.identifier);
     this.switchProperty.setCachedValueAndNotify(info.switch.state === '1');
+
+    const temperature = await this.client.getTemperature(this.deviceInfo.identifier);
+    this.temperatureProperty.setCachedValueAndNotify(temperature);
   }
 }
 
