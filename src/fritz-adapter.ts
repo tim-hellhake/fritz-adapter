@@ -124,11 +124,11 @@ class FritzThermostat extends Device {
     this['@type'] = ['TemperatureSensor'];
     this.name = deviceInfo.name;
     this.description = deviceInfo.productname;
+
     this.setTemperatureProperty = new SetTemperatureProperty(this, client, log);
-    // eslint-disable-next-line max-len
     this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
+
     this.temperatureProperty = new TemperatureProperty(this);
-    // eslint-disable-next-line max-len
     this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
   }
 
@@ -140,11 +140,9 @@ class FritzThermostat extends Device {
   }
 
   async poll() {
-    // eslint-disable-next-line max-len
     const temperature = await this.client.getTemperature(this.deviceInfo.identifier);
     this.temperatureProperty.setCachedValueAndNotify(temperature);
 
-    // eslint-disable-next-line max-len
     const setTemperature = await this.client.getTempTarget(this.deviceInfo.identifier);
     this.setTemperatureProperty.setCachedValueAndNotify(setTemperature);
   }
@@ -190,9 +188,7 @@ export class FritzAdapter extends Adapter {
     for (const deviceInfo of deviceInfos) {
       console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
 
-      // eslint-disable-next-line max-len
       if (deviceInfo.productname === 'FRITZ!DECT 200' || deviceInfo.productname === 'FRITZ!DECT 210') {
-        // eslint-disable-next-line max-len
         const fritzDect200 = new FritzDect200(this, client, deviceInfo, this.log);
         this.handleDeviceAdded(fritzDect200);
         fritzDect200.startPolling(pollInterval);
@@ -203,9 +199,9 @@ export class FritzAdapter extends Adapter {
 
     for (const thermostatAin of thermostatAins) {
       const deviceInfo = await client.getDevice(thermostatAin);
-      // eslint-disable-next-line max-len
+
       console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-      // eslint-disable-next-line max-len
+
       const fritzThermostat = new FritzThermostat(this, client, deviceInfo, this.log);
       this.handleDeviceAdded(fritzThermostat);
       fritzThermostat.startPolling(pollInterval);
