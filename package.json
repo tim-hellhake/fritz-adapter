@@ -29,6 +29,6 @@
     "fritzapi": "^0.11.0"
   },
   "devDependencies": {
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.3"
   }
 }
