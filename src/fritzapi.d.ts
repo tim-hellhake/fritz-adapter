@@ -15,5 +15,9 @@ declare module 'fritzapi' {
         getTempTarget(identifier: string): void;
         getDeviceList(): Promise<any[]>;
         getThermostatList(): Promise<any[]>;
+        getColorBulbList(): Promise<any[]>;
+        setSimpleOnOff(ain: any, value: number): void;
+        setLevel(ain: any, level: number): void;
+        setColor(ain: any, color: string, satindex: number, duration: number): void;
     }
 }
