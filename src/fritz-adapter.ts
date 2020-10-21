@@ -193,6 +193,27 @@ class BrightnessProperty extends Property {
   }
 }
 
+class ColorTemperatureProperty extends Property {
+  constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(device, 'colorTemperaturePreset', {
+      type: 'string',
+      title: 'Color temperature',
+      enum: ['2700', '3000', '3400', '3800', '4200', '4700', '5300', '5900', '6500']
+    });
+  }
+
+  async setValue(value: string) {
+    try {
+      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
+      super.setValue(value);
+      const ain = this.device.deviceInfo.identifier;
+      await this.client.setColorTemperature(ain, parseInt(value), 0);
+    } catch (e) {
+      this.log(`Could not set value: ${e}`);
+    }
+  }
+}
+
 class ColorProperty extends Property {
   constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'colorPreset', {
@@ -217,6 +238,7 @@ class ColorProperty extends Property {
 class FritzColorBulb extends Device {
   private onOffProperty: OnOffProperty;
   private brightnessProperty: BrightnessProperty;
+  private colorTemperatureProperty: ColorTemperatureProperty;
   private colorProperty: ColorProperty;
 
   constructor(adapter: Adapter, client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
@@ -231,6 +253,9 @@ class FritzColorBulb extends Device {
 
     this.brightnessProperty = new BrightnessProperty(this, client, log);
     this.properties.set(this.brightnessProperty.name, this.brightnessProperty);
+
+    this.colorTemperatureProperty = new ColorTemperatureProperty(this, client, log);
+    this.properties.set(this.colorTemperatureProperty.name, this.colorTemperatureProperty);
 
     this.colorProperty = new ColorProperty(this, client, log);
     this.properties.set(this.colorProperty.name, this.colorProperty);

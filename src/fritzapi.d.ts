@@ -18,6 +18,7 @@ declare module 'fritzapi' {
         getColorBulbList(): Promise<any[]>;
         setSimpleOnOff(ain: any, value: number): void;
         setLevel(ain: any, level: number): void;
+        setColorTemperature(ain: any, temperature: number, duration: number): void;
         setColor(ain: any, color: string, satindex: number, duration: number): void;
     }
 }
