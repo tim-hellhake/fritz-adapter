@@ -10,6 +10,8 @@ import { Fritz } from 'fritzapi';
 
 import { Adapter, Device, Property } from 'gateway-addon';
 
+import { Color, ColorDefaults, FritzBulb, FritzClient } from './fritz-client';
+
 export class SwitchProperty extends Property {
   constructor(private device: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'state', {
@@ -149,7 +151,7 @@ class FritzThermostat extends Device {
 }
 
 class OnOffProperty extends Property {
-  constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'on', {
       '@type': 'OnOffProperty',
       type: 'boolean',
@@ -161,8 +163,7 @@ class OnOffProperty extends Property {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
       super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
-      await this.client.setSimpleOnOff(ain, value ? 1 : 0);
+      await this.bulb.setOn(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
     }
@@ -170,7 +171,7 @@ class OnOffProperty extends Property {
 }
 
 class BrightnessProperty extends Property {
-  constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'brightness', {
       '@type': 'BrightnessProperty',
       type: 'integer',
@@ -185,8 +186,7 @@ class BrightnessProperty extends Property {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
       super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
-      await this.client.setLevel(ain, Math.round(value / 100.0 * 255.0));
+      await this.bulb.setBrightness(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
     }
@@ -194,11 +194,11 @@ class BrightnessProperty extends Property {
 }
 
 class ColorTemperatureProperty extends Property {
-  constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(private device: FritzColorBulb, private bulb: FritzBulb, temperatures: string[], private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'colorTemperaturePreset', {
       type: 'string',
       title: 'Color temperature',
-      enum: ['2700', '3000', '3400', '3800', '4200', '4700', '5300', '5900', '6500']
+      enum: temperatures
     });
   }
 
@@ -206,8 +206,7 @@ class ColorTemperatureProperty extends Property {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
       super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
-      await this.client.setColorTemperature(ain, parseInt(value), 0);
+      await this.bulb.setTemperature({ kelvin: parseInt(value) });
     } catch (e) {
       this.log(`Could not set value: ${e}`);
     }
@@ -215,20 +214,23 @@ class ColorTemperatureProperty extends Property {
 }
 
 class ColorProperty extends Property {
-  constructor(private device: FritzColorBulb, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private colors: { [key: string]: Color }, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'colorPreset', {
       type: 'string',
       title: 'Color',
-      enum: ['red', 'orange', 'yellow', 'lime', 'green', 'turquoise', 'cyan', 'lightblue', 'blue', 'purple', 'magenta', 'pink']
+      enum: Object.keys(colors)
     });
   }
 
   async setValue(value: string) {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
+      const color = this.colors[value];
+      if (!color) {
+        throw new Error(`Unknown color ${value}`);
+      }
       super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
-      await this.client.setColor(ain, value, 2, 0);
+      await this.bulb.setColor(color);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
     }
@@ -241,23 +243,33 @@ class FritzColorBulb extends Device {
   private colorTemperatureProperty: ColorTemperatureProperty;
   private colorProperty: ColorProperty;
 
-  constructor(adapter: Adapter, client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
-    super(adapter, deviceInfo.identifier);
+  constructor(adapter: Adapter, bulb: FritzBulb, colorDefaults: ColorDefaults, log: (message?: any, ...optionalParams: any[]) => void) {
+    super(adapter, bulb.getAin());
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['Light'];
-    this.name = deviceInfo.name;
-    this.description = deviceInfo.productname;
+    this.name = bulb.getName();
 
-    this.onOffProperty = new OnOffProperty(this, client, log);
+    this.onOffProperty = new OnOffProperty(this, bulb, log);
     this.properties.set(this.onOffProperty.name, this.onOffProperty);
 
-    this.brightnessProperty = new BrightnessProperty(this, client, log);
+    this.brightnessProperty = new BrightnessProperty(this, bulb, log);
     this.properties.set(this.brightnessProperty.name, this.brightnessProperty);
 
-    this.colorTemperatureProperty = new ColorTemperatureProperty(this, client, log);
+    const temperatures = colorDefaults.colorTemperatures.map(x => x.kelvin).map(x => `${x}`);
+    this.colorTemperatureProperty = new ColorTemperatureProperty(this, bulb, temperatures, log);
     this.properties.set(this.colorTemperatureProperty.name, this.colorTemperatureProperty);
 
-    this.colorProperty = new ColorProperty(this, client, log);
+
+    const colors: { [key: string]: Color } = {};
+
+    for (const mainColor of colorDefaults.colors) {
+      for (const subColor of mainColor.colors) {
+        const name = `${mainColor.name}_${subColor.sat_index}`
+        colors[name] = subColor;
+      }
+    }
+
+    this.colorProperty = new ColorProperty(this, bulb, colors, log);
     this.properties.set(this.colorProperty.name, this.colorProperty);
   }
 }
@@ -265,7 +277,7 @@ class FritzColorBulb extends Device {
 export class FritzAdapter extends Adapter {
   private log: (message?: any, ...optionalParams: any[]) => void;
 
-  constructor(addonManager: any, manifest: any) {
+  constructor(addonManager: any, private manifest: any) {
     super(addonManager, FritzAdapter.name, manifest.name);
     addonManager.addAdapter(this);
     const {
@@ -321,14 +333,19 @@ export class FritzAdapter extends Adapter {
       fritzThermostat.startPolling(pollInterval);
     }
 
-    const colorBulbAins = await client.getColorBulbList();
+    const {
+      host,
+      username,
+      password
+    } = this.manifest.moziot.config;
 
-    for (const colorBulbAin of colorBulbAins) {
-      const deviceInfo = await client.getDevice(colorBulbAin);
+    const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password);
+    const colorDefaults = await fritzClient.getColorDefaults();
+    const bulbs = await fritzClient.getBulbs();
 
-      console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-
-      const device = new FritzColorBulb(this, client, deviceInfo, this.log);
+    for (const bulb of bulbs) {
+      console.log(`Detected new ${bulb}`);
+      const device = new FritzColorBulb(this, bulb, colorDefaults, this.log);
       this.handleDeviceAdded(device);
     }
   }
