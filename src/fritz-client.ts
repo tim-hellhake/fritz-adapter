@@ -480,9 +480,12 @@ export class FritzClient {
 
         const rights = sessionInfo?.SessionInfo.Rights
             .filter(right => right.Name)
-            .map(right => right.Name[0])
+            .map(right => right.Name[0]);
+
+        console.log(`User rights: ${JSON.stringify(rights)}`);
+
         if (rights.indexOf('HomeAuto') == -1) {
-            throw new Error('User needs "HomeAuto" access rights');
+            console.warn('User needs "HomeAuto" access rights');
         }
 
         return new FritzClient(host, sessionId);
