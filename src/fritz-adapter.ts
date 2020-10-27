@@ -10,7 +10,7 @@ import { Fritz } from 'fritzapi';
 
 import { Adapter, Device, Property } from 'gateway-addon';
 
-import { Color, ColorDefaults, FritzBulb, FritzClient } from './fritz-client';
+import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient } from './fritz-client';
 
 export class SwitchProperty extends Property {
   constructor(private device: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
@@ -157,6 +157,10 @@ class OnOffProperty extends Property {
       type: 'boolean',
       title: 'On',
     });
+
+    bulb.on('on', (on: boolean) => {
+      this.setCachedValueAndNotify(on);
+    });
   }
 
   async setValue(value: boolean) {
@@ -180,6 +184,10 @@ class BrightnessProperty extends Property {
       unit: 'percent',
       title: 'Brightness',
     });
+
+    bulb.on('brightness', (brightness: number) => {
+      this.setCachedValueAndNotify(brightness);
+    });
   }
 
   async setValue(value: number) {
@@ -200,6 +208,10 @@ class ColorTemperatureProperty extends Property {
       title: 'Color temperature',
       enum: temperatures
     });
+
+    bulb.on('colorTemperature', (colorTemperature: number) => {
+      this.setCachedValueAndNotify(colorTemperature);
+    });
   }
 
   async setValue(value: string) {
@@ -214,18 +226,29 @@ class ColorTemperatureProperty extends Property {
 }
 
 class ColorProperty extends Property {
-  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private colors: { [key: string]: Color }, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private subColors: { [key: string]: SubColor }, private log: (message?: any, ...optionalParams: any[]) => void) {
     super(device, 'colorPreset', {
       type: 'string',
       title: 'Color',
-      enum: Object.keys(colors)
+      enum: Object.keys(subColors)
+    });
+
+    bulb.on('color', (color: Color) => {
+      for (const [name, subColor] of Object.entries(subColors)) {
+        if (subColor.hue == color.hue && subColor.sat == subColor.sat) {
+          this.setCachedValueAndNotify(name);
+          return;
+        }
+      }
+
+      console.warn(`No color preset for ${JSON.stringify(color)} found`);
     });
   }
 
   async setValue(value: string) {
     try {
       this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      const color = this.colors[value];
+      const color = this.subColors[value];
       if (!color) {
         throw new Error(`Unknown color ${value}`);
       }
@@ -260,7 +283,7 @@ class FritzColorBulb extends Device {
     this.properties.set(this.colorTemperatureProperty.name, this.colorTemperatureProperty);
 
 
-    const colors: { [key: string]: Color } = {};
+    const colors: { [key: string]: SubColor } = {};
 
     for (const mainColor of colorDefaults.colors) {
       for (const subColor of mainColor.colors) {
@@ -348,5 +371,7 @@ export class FritzAdapter extends Adapter {
       const device = new FritzColorBulb(this, bulb, colorDefaults, this.log);
       this.handleDeviceAdded(device);
     }
+
+    setInterval(() => fritzClient.update(), pollInterval * 1000);
   }
 }

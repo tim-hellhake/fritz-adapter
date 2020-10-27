@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import { parseStringPromise } from 'xml2js';
 import { createHash } from 'crypto';
+import { EventEmitter } from 'events';
 
 interface SessionInfoResponse {
     SessionInfo: SessionInfo
@@ -177,10 +178,7 @@ interface DeviceInfo {
         levelpercentage: number
     },
     colorcontrol?: {
-        color?: {
-            hue: number,
-            sat: number
-        },
+        color?: Color,
         temperature?: number
     },
     battery?: number,
@@ -199,6 +197,11 @@ interface DeviceInfo {
     }
 }
 
+export interface Color {
+    hue: number,
+    sat: number
+}
+
 export interface ColorDefaults {
     colors: MainColor[],
     colorTemperatures: ColorTemperature[]
@@ -206,10 +209,10 @@ export interface ColorDefaults {
 
 export interface MainColor {
     name: string,
-    colors: Color[]
+    colors: SubColor[]
 }
 
-export interface Color {
+export interface SubColor {
     sat_index: number,
     hue: number,
     sat: number,
@@ -220,8 +223,29 @@ export interface ColorTemperature {
     kelvin: number
 }
 
-export class FritzBulb {
+export class FritzBulb extends EventEmitter {
     constructor(private client: FritzClient, private deviceInfo: DeviceInfo) {
+        super();
+
+        client.on('info', (deviceInfo: DeviceInfo) => {
+            if (deviceInfo.identifier == this.deviceInfo.identifier) {
+                if (deviceInfo?.simpleonoff) {
+                    this.emit('on', deviceInfo.simpleonoff.state);
+                }
+
+                if (deviceInfo?.levelcontrol?.levelpercentage) {
+                    this.emit('brightness', deviceInfo.levelcontrol.levelpercentage);
+                }
+
+                if (deviceInfo?.colorcontrol?.temperature) {
+                    this.emit('colorTemperature', deviceInfo.colorcontrol.temperature);
+                }
+
+                if (deviceInfo?.colorcontrol?.color) {
+                    this.emit('color', deviceInfo.colorcontrol.color);
+                }
+            }
+        });
     }
 
     public async setOn(on: boolean) {
@@ -238,7 +262,7 @@ export class FritzBulb {
         });
     }
 
-    public async setColor(color: Color) {
+    public async setColor(color: SubColor) {
         await this.client.invoke('setcolor', {
             ain: this.deviceInfo.identifier,
             hue: color.hue,
@@ -292,14 +316,23 @@ const FEATURES = [
     'ColorLight'
 ]
 
-export class FritzClient {
+export class FritzClient extends EventEmitter {
     private constructor(private host: string, private sessionId: string) {
+        super();
     }
 
     public async getBulbs() {
         return (await this.getDeviceInfos())
             .filter(device => device.features.indexOf('Light') > -1)
             .map(deviceInfo => new FritzBulb(this, deviceInfo));
+    }
+
+    public async update() {
+        const deviceInfos = await this.getDeviceInfos();
+
+        for (const deviceInfo of deviceInfos) {
+            this.emit('info', deviceInfo);
+        }
     }
 
     public async getDeviceInfos(): Promise<DeviceInfo[]> {
