@@ -2,7 +2,7 @@
     "id": "fritz-adapter",
     "short_name": "Fritz!",
     "name": "Fritz!",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "author": "Tim Hellhake",
     "description": "Connect your Fritz! devices",
     "homepage_url": "https://github.com/tim-hellhake/fritz-adapter#readme",
