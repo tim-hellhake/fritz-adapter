@@ -335,8 +335,6 @@ export class FritzAdapter extends Adapter {
     const deviceInfos = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
-      console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
-
       if (deviceInfo.productname === 'FRITZ!DECT 200' || deviceInfo.productname === 'FRITZ!DECT 210') {
         const fritzDect200 = new FritzDect200(this, client, deviceInfo, this.log);
         this.handleDeviceAdded(fritzDect200);
@@ -363,6 +361,14 @@ export class FritzAdapter extends Adapter {
     } = this.manifest.moziot.config;
 
     const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password);
+
+    const devices = await fritzClient.getDeviceInfos();
+
+    for(const deviceInfo of devices) {
+      console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
+      this.log(JSON.stringify(deviceInfo));
+    }
+
     const colorDefaults = await fritzClient.getColorDefaults();
     const bulbs = await fritzClient.getBulbs();
 
