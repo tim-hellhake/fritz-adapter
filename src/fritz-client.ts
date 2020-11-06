@@ -317,7 +317,7 @@ const FEATURES = [
 ]
 
 export class FritzClient extends EventEmitter {
-    private constructor(private host: string, private sessionId: string) {
+    private constructor(private host: string, private sessionId: string, private debug?: boolean) {
         super();
     }
 
@@ -338,6 +338,11 @@ export class FritzClient extends EventEmitter {
     public async getDeviceInfos(): Promise<DeviceInfo[]> {
         const body: string = await this.invoke('getdevicelistinfos');
         const deviceInfos: DeviceInfosResponse = await parseStringPromise(body);
+
+        if (this.debug) {
+            console.log(body);
+            console.log(deviceInfos);
+        }
 
         return deviceInfos.devicelist.device.map(device => {
             const identifier = device.$.identifier.replace(' ', '');
@@ -501,7 +506,7 @@ export class FritzClient extends EventEmitter {
         return await response.text();
     }
 
-    public static async login(host: string, username: string, password: string): Promise<FritzClient> {
+    public static async login(host: string, username: string, password: string, debug?: boolean): Promise<FritzClient> {
         const challengeInfo = await FritzClient.getChallenge(host);
         const challenge = challengeInfo.SessionInfo.Challenge[0];
         const sessionInfo = await this.createSession(host, username, password, challenge);
@@ -521,7 +526,7 @@ export class FritzClient extends EventEmitter {
             console.warn('User needs "HomeAuto" access rights');
         }
 
-        return new FritzClient(host, sessionId);
+        return new FritzClient(host, sessionId, debug);
     }
 
     public static async getChallenge(host: string): Promise<SessionInfoResponse> {

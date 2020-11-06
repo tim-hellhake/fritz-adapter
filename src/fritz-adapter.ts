@@ -328,10 +328,10 @@ export class FritzAdapter extends Adapter {
     }
 
     const client = new Fritz(username, password, host);
-    this.discover(client, pollInterval);
+    this.discover(client, pollInterval, debug);
   }
 
-  async discover(client: Fritz, pollInterval: number) {
+  async discover(client: Fritz, pollInterval: number, debug: boolean) {
     const deviceInfos = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
@@ -360,11 +360,11 @@ export class FritzAdapter extends Adapter {
       password
     } = this.manifest.moziot.config;
 
-    const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password);
+    const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password, debug);
 
     const devices = await fritzClient.getDeviceInfos();
 
-    for(const deviceInfo of devices) {
+    for (const deviceInfo of devices) {
       console.log(`Detected new ${deviceInfo.productname} with ain ${deviceInfo.identifier}`);
       this.log(JSON.stringify(deviceInfo));
     }
