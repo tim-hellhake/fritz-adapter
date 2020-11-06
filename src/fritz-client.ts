@@ -223,9 +223,63 @@ export interface ColorTemperature {
     kelvin: number
 }
 
-export class FritzBulb extends EventEmitter {
-    constructor(private client: FritzClient, private deviceInfo: DeviceInfo) {
+export class FritzDevice extends EventEmitter {
+    constructor(protected client: FritzClient, protected deviceInfo: DeviceInfo) {
         super();
+
+        client.on('info', (deviceInfo: DeviceInfo) => {
+            if (deviceInfo.identifier == this.deviceInfo.identifier) {
+                if (deviceInfo?.battery ?? false) {
+                    this.emit('battery', deviceInfo?.battery);
+                }
+
+                if (deviceInfo?.batterylow ?? false) {
+                    this.emit('batterylow', deviceInfo?.batterylow);
+                }
+            }
+        });
+    }
+
+    public getAin(): string {
+        return this.deviceInfo.identifier;
+    }
+
+    public getName(): string {
+        return this.deviceInfo.name;
+    }
+
+    public toString(): string {
+        return `${this.deviceInfo.name} [${this.deviceInfo.identifier}] (${this.deviceInfo.productname})`;
+    }
+
+    public hasBattery(): boolean {
+        return typeof this.deviceInfo?.battery === "number";
+    }
+}
+
+export class FritzTemperatureSensor extends FritzDevice {
+    constructor(client: FritzClient, deviceInfo: DeviceInfo) {
+        super(client, deviceInfo);
+
+        client.on('info', (deviceInfo: DeviceInfo) => {
+            if (deviceInfo.identifier == this.deviceInfo.identifier) {
+                if (deviceInfo?.temperature?.celsius ?? false) {
+                    this.emit('temperature', deviceInfo?.temperature?.celsius);
+                }
+            }
+        });
+    }
+}
+
+export class FritzButton extends FritzTemperatureSensor {
+    constructor(client: FritzClient, deviceInfo: DeviceInfo) {
+        super(client, deviceInfo);
+    }
+}
+
+export class FritzBulb extends FritzDevice {
+    constructor(client: FritzClient, deviceInfo: DeviceInfo) {
+        super(client, deviceInfo);
 
         client.on('info', (deviceInfo: DeviceInfo) => {
             if (deviceInfo.identifier == this.deviceInfo.identifier) {
@@ -278,18 +332,6 @@ export class FritzBulb extends EventEmitter {
             duration: 0
         });
     }
-
-    public getAin(): string {
-        return this.deviceInfo.identifier;
-    }
-
-    public getName(): string {
-        return this.deviceInfo.name;
-    }
-
-    public toString(): string {
-        return `${this.deviceInfo.name} [${this.deviceInfo.identifier}] (${this.deviceInfo.productname})`;
-    }
 }
 
 const COLOR_MODE_HUE_SAT = 1;
@@ -325,6 +367,12 @@ export class FritzClient extends EventEmitter {
         return (await this.getDeviceInfos())
             .filter(device => device.features.indexOf('Light') > -1)
             .map(deviceInfo => new FritzBulb(this, deviceInfo));
+    }
+
+    public async getButtons() {
+        return (await this.getDeviceInfos())
+            .filter(device => device.features.indexOf('Button') > -1)
+            .map(deviceInfo => new FritzButton(this, deviceInfo));
     }
 
     public async update() {

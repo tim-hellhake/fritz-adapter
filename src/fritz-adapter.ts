@@ -10,7 +10,7 @@ import { Fritz } from 'fritzapi';
 
 import { Adapter, Device, Property } from 'gateway-addon';
 
-import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient } from './fritz-client';
+import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor } from './fritz-client';
 
 export class SwitchProperty extends Property {
   constructor(private device: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
@@ -297,6 +297,97 @@ class FritzColorBulb extends Device {
   }
 }
 
+class BatteryProperty extends Property {
+  constructor(device: Device, fritzDevice: FritzDevice) {
+    super(device, 'battery', {
+      '@type': 'LevelProperty',
+      type: 'integer',
+      minimum: 0,
+      maximum: 100,
+      unit: 'percent',
+      title: 'Battery',
+      readOnly: true
+    });
+
+    fritzDevice.on('battery', (battery: number) => {
+      this.setCachedValueAndNotify(battery);
+    });
+  }
+}
+
+class BatterylowProperty extends Property {
+  constructor(device: Device, fritzDevice: FritzDevice) {
+    super(device, 'batterylow', {
+      type: 'boolean',
+      unit: 'batterylow',
+      title: 'Battery low',
+      readOnly: true
+    });
+
+    fritzDevice.on('batterylow', (batterylow: boolean) => {
+      this.setCachedValueAndNotify(batterylow);
+    });
+  }
+}
+
+class TemperatureSensorProperty extends Property {
+  constructor(device: Device, fritzDevice: FritzTemperatureSensor) {
+    super(device, 'temperature', {
+      type: 'number',
+      '@type': 'TemperatureProperty',
+      unit: 'degree celsius',
+      multipleOf: 0.5,
+      title: 'Temperature',
+      description: 'The ambient temperature',
+      readOnly: true
+    });
+
+    fritzDevice.on('temperature', (temperature: number) => {
+      this.setCachedValueAndNotify(temperature);
+    });
+  }
+}
+
+export class BasicDevice extends Device {
+  private batteryProperty?: BatteryProperty;
+  private batterylowProperty?: BatterylowProperty;
+
+  constructor(adapter: Adapter, button: FritzDevice) {
+    super(adapter, button.getAin());
+    this['@context'] = 'https://iot.mozilla.org/schemas/';
+    this['@type'] = [];
+    this.name = button.getName();
+
+    if (button.hasBattery()) {
+      this.batteryProperty = new BatteryProperty(this, button);
+      this.properties.set(this.batteryProperty.name, this.batteryProperty);
+
+      this.batterylowProperty = new BatterylowProperty(this, button);
+      this.properties.set(this.batterylowProperty.name, this.batterylowProperty);
+    }
+  }
+}
+
+export class TemperatureSensor extends BasicDevice {
+  private temperatureSensorProperty: TemperatureSensorProperty;
+
+  constructor(adapter: Adapter, button: FritzButton) {
+    super(adapter, button);
+    this['@context'] = 'https://iot.mozilla.org/schemas/';
+    this['@type'] = ['TemperatureSensor'];
+    this.name = button.getName();
+
+    this.temperatureSensorProperty = new TemperatureSensorProperty(this, button);
+    this.properties.set(this.temperatureSensorProperty.name, this.temperatureSensorProperty);
+  }
+}
+
+export class Button extends TemperatureSensor {
+  constructor(adapter: Adapter, button: FritzButton) {
+    super(adapter, button);
+  }
+}
+
 export class FritzAdapter extends Adapter {
   private log: (message?: any, ...optionalParams: any[]) => void;
 
@@ -375,6 +466,14 @@ export class FritzAdapter extends Adapter {
     for (const bulb of bulbs) {
       console.log(`Detected new ${bulb}`);
       const device = new FritzColorBulb(this, bulb, colorDefaults, this.log);
+      this.handleDeviceAdded(device);
+    }
+
+    const buttons = await fritzClient.getButtons();
+
+    for (const button of buttons) {
+      console.log(`Detected new ${button}`);
+      const device = new Button(this, button);
       this.handleDeviceAdded(device);
     }
 
