@@ -15,6 +15,7 @@ declare module 'gateway-addon' {
     }
 
     interface EventMetadata {
+        '@type': string,
         description: string,
         type: string
     }

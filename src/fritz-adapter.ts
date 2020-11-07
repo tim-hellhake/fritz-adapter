@@ -8,7 +8,7 @@
 
 import { Fritz } from 'fritzapi';
 
-import { Adapter, Device, Property } from 'gateway-addon';
+import { Adapter, Device, Event, Property } from 'gateway-addon';
 
 import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor } from './fritz-client';
 
@@ -385,6 +385,20 @@ export class TemperatureSensor extends BasicDevice {
 export class Button extends TemperatureSensor {
   constructor(adapter: Adapter, button: FritzButton) {
     super(adapter, button);
+    this['@type'].push('PushButton');
+
+    for (const subButton of button.getButtons()) {
+      this.events.set(subButton.id, {
+        name: subButton.id,
+        metadata: {
+          '@type': 'PressedEvent',
+          description: 'Button pressed',
+          type: 'string'
+        }
+      });
+    }
+
+    button.on('press', buttonId => this.eventNotify(new Event(this, buttonId)));
   }
 }
 

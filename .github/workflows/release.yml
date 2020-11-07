@@ -19,6 +19,7 @@ jobs:
       run: |
         npm ci
         npm run build
+        npm run test
         ./package.sh
     - name: Create Release
       id: create_release

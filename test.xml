@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<devicelist version="1" fwversion="7.21">
+    <device identifier="13077 0453636-1" id="2000" functionbitmask="237572" fwversion="0.0" manufacturer="AVM" productname="FRITZ!DECT 500">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Licht 1</name>
+        <simpleonoff>
+            <state>0</state>
+        </simpleonoff>
+        <levelcontrol>
+            <level>187</level>
+            <levelpercentage>73</levelpercentage>
+        </levelcontrol>
+        <colorcontrol supported_modes="5" current_mode="4">
+            <hue></hue>
+            <saturation></saturation>
+            <temperature>3400</temperature>
+        </colorcontrol>
+        <etsiunitinfo>
+            <etsideviceid>406</etsideviceid>
+            <unittype>278</unittype>
+            <interfaces>512,514,513</interfaces>
+        </etsiunitinfo>
+    </device>
+    <device identifier="13077 0454325-1" id="2001" functionbitmask="237572" fwversion="0.0" manufacturer="AVM" productname="FRITZ!DECT 500">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Licht 2</name>
+        <simpleonoff>
+            <state>0</state>
+        </simpleonoff>
+        <levelcontrol>
+            <level>176</level>
+            <levelpercentage>69</levelpercentage>
+        </levelcontrol>
+        <colorcontrol supported_modes="5" current_mode="4">
+            <hue></hue>
+            <saturation></saturation>
+            <temperature>3400</temperature>
+        </colorcontrol>
+        <etsiunitinfo>
+            <etsideviceid>407</etsideviceid>
+            <unittype>278</unittype>
+            <interfaces>512,514,513</interfaces>
+        </etsiunitinfo>
+    </device>
+    <device identifier="11961 0879345" id="17" functionbitmask="320" fwversion="03.54" manufacturer="AVM" productname="Comet DECT">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Heizung 1</name>
+        <battery>90</battery>
+        <batterylow>0</batterylow>
+        <temperature>
+            <celsius>150</celsius>
+            <offset>0</offset>
+        </temperature>
+        <hkr>
+            <tist>30</tist>
+            <tsoll>33</tsoll>
+            <absenk>33</absenk>
+            <komfort>34</komfort>
+            <lock>0</lock>
+            <devicelock>1</devicelock>
+            <errorcode>0</errorcode>
+            <windowopenactiv>0</windowopenactiv>
+            <windowopenactiveendtime>0</windowopenactiveendtime>
+            <boostactive>0</boostactive>
+            <boostactiveendtime>0</boostactiveendtime>
+            <batterylow>0</batterylow>
+            <battery>90</battery>
+            <nextchange>
+                <endperiod>1604745900</endperiod>
+                <tchange>34</tchange>
+            </nextchange>
+            <summeractive>0</summeractive>
+            <holidayactive>0</holidayactive>
+        </hkr>
+    </device>
+    <device identifier="11960 0543856" id="18" functionbitmask="320" fwversion="03.54" manufacturer="AVM" productname="Comet DECT">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Heizung 2</name>
+        <battery>80</battery>
+        <batterylow>0</batterylow>
+        <temperature>
+            <celsius>180</celsius>
+            <offset>-10</offset>
+        </temperature>
+        <hkr>
+            <tist>36</tist>
+            <tsoll>31</tsoll>
+            <absenk>31</absenk>
+            <komfort>35</komfort>
+            <lock>0</lock>
+            <devicelock>0</devicelock>
+            <errorcode>0</errorcode>
+            <windowopenactiv>0</windowopenactiv>
+            <windowopenactiveendtime>0</windowopenactiveendtime>
+            <boostactive>0</boostactive>
+            <boostactiveendtime>0</boostactiveendtime>
+            <batterylow>0</batterylow>
+            <battery>80</battery>
+            <nextchange>
+                <endperiod>1604769300</endperiod>
+                <tchange>35</tchange>
+            </nextchange>
+            <summeractive>0</summeractive>
+            <holidayactive>0</holidayactive>
+        </hkr>
+    </device>
+    <device identifier="11960 0876345" id="19" functionbitmask="320" fwversion="03.54" manufacturer="AVM" productname="Comet DECT">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Heizung 3</name>
+        <battery>40</battery>
+        <batterylow>0</batterylow>
+        <temperature>
+            <celsius>150</celsius>
+            <offset>-30</offset>
+        </temperature>
+        <hkr>
+            <tist>30</tist>
+            <tsoll>25</tsoll>
+            <absenk>25</absenk>
+            <komfort>33</komfort>
+            <lock>0</lock>
+            <devicelock>1</devicelock>
+            <errorcode>0</errorcode>
+            <windowopenactiv>0</windowopenactiv>
+            <windowopenactiveendtime>0</windowopenactiveendtime>
+            <boostactive>0</boostactive>
+            <boostactiveendtime>0</boostactiveendtime>
+            <batterylow>0</batterylow>
+            <battery>40</battery>
+            <nextchange>
+                <endperiod>1604809800</endperiod>
+                <tchange>33</tchange>
+            </nextchange>
+            <summeractive>0</summeractive>
+            <holidayactive>0</holidayactive>
+        </hkr>
+    </device>
+    <device identifier="11961 0234867" id="20" functionbitmask="320" fwversion="03.54" manufacturer="AVM" productname="Comet DECT">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Heizung 4</name>
+        <battery>30</battery>
+        <batterylow>0</batterylow>
+        <temperature>
+            <celsius>205</celsius>
+            <offset>0</offset>
+        </temperature>
+        <hkr>
+            <tist>41</tist>
+            <tsoll>33</tsoll>
+            <absenk>33</absenk>
+            <komfort>43</komfort>
+            <lock>0</lock>
+            <devicelock>1</devicelock>
+            <errorcode>0</errorcode>
+            <windowopenactiv>0</windowopenactiv>
+            <windowopenactiveendtime>0</windowopenactiveendtime>
+            <boostactive>0</boostactive>
+            <boostactiveendtime>0</boostactiveendtime>
+            <batterylow>0</batterylow>
+            <battery>30</battery>
+            <nextchange>
+                <endperiod>1604809800</endperiod>
+                <tchange>43</tchange>
+            </nextchange>
+            <summeractive>0</summeractive>
+            <holidayactive>0</holidayactive>
+        </hkr>
+    </device>
+    <device identifier="13077 0453636" id="406" functionbitmask="1" fwversion="34.10.16.16.012" manufacturer="AVM" productname="FRITZ!DECT 500">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Licht 1</name>
+    </device>
+    <device identifier="13077 0454325" id="407" functionbitmask="1" fwversion="34.10.16.16.012" manufacturer="AVM" productname="FRITZ!DECT 500">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Licht 2</name>
+    </device>
+    <device identifier="09995 0756387" id="21" functionbitmask="288" fwversion="05.06" manufacturer="AVM" productname="FRITZ!DECT 440">
+        <present>1</present>
+        <txbusy>0</txbusy>
+        <name>Schalter 1</name>
+        <battery>100</battery>
+        <batterylow>0</batterylow>
+        <temperature>
+            <celsius>195</celsius>
+            <offset>0</offset>
+        </temperature>
+        <button identifier="09995 0756387-1" id="5000">
+            <name>Schalter 1: Top right</name>
+            <lastpressedtimestamp>1604710638</lastpressedtimestamp>
+        </button>
+        <button identifier="09995 0756387-3" id="5001">
+            <name>Schalter 1: Bottom right</name>
+            <lastpressedtimestamp>1602355181</lastpressedtimestamp>
+        </button>
+        <button identifier="09995 0756387-5" id="5002">
+            <name>Schalter 1: Bottom left</name>
+            <lastpressedtimestamp>1602355178</lastpressedtimestamp>
+        </button>
+        <button identifier="09995 0756387-7" id="5003">
+            <name>Schalter 1: Top left</name>
+            <lastpressedtimestamp>1604598916</lastpressedtimestamp>
+        </button>
+    </device>
+    <device identifier="11630 0648244" id="22" functionbitmask="35712" fwversion="04.16" manufacturer="AVM" productname="FRITZ!DECT 200">
+        <present>0</present>
+        <txbusy>0</txbusy>
+        <name>FRITZ!DECT 200 #7</name>
+        <switch>
+            <state></state>
+            <mode></mode>
+            <lock></lock>
+            <devicelock></devicelock>
+        </switch>
+        <simpleonoff>
+            <state></state>
+        </simpleonoff>
+        <powermeter>
+            <voltage></voltage>
+            <power></power>
+            <energy></energy>
+        </powermeter>
+        <temperature>
+            <celsius></celsius>
+            <offset></offset>
+        </temperature>
+    </device>
+</devicelist>

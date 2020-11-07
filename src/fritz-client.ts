@@ -157,6 +157,15 @@ interface DeviceResponse {
             power: string[],
             energy: string[]
         }
+    ],
+    button: [
+        {
+            '$': {
+                id: string
+            },
+            name: string[],
+            lastpressedtimestamp: string[]
+        }
     ]
 }
 
@@ -194,7 +203,8 @@ interface DeviceInfo {
         voltage: number,
         power: number,
         energy: number
-    }
+    },
+    buttons?: SubButton[]
 }
 
 export interface Color {
@@ -221,6 +231,12 @@ export interface SubColor {
 
 export interface ColorTemperature {
     kelvin: number
+}
+
+export interface SubButton {
+    id: string,
+    name: string,
+    lastpressedtimestamp: number
 }
 
 export class FritzDevice extends EventEmitter {
@@ -272,8 +288,42 @@ export class FritzTemperatureSensor extends FritzDevice {
 }
 
 export class FritzButton extends FritzTemperatureSensor {
-    constructor(client: FritzClient, deviceInfo: DeviceInfo) {
+    private timestamps: Record<string, number> = {};
+
+    constructor(client: FritzClient, deviceInfo: DeviceInfo, debug?: boolean) {
         super(client, deviceInfo);
+
+        if (deviceInfo.buttons) {
+            for (const button of deviceInfo.buttons) {
+                this.timestamps[button.id] = button.lastpressedtimestamp;
+            }
+        }
+
+        client.on('info', (deviceInfo: DeviceInfo) => {
+            if (deviceInfo.identifier == this.deviceInfo.identifier) {
+                if (deviceInfo?.buttons) {
+                    for (const button of deviceInfo?.buttons) {
+                        if (button.id in this.timestamps) {
+                            const lastTimestamp = this.timestamps[button.id];
+
+                            if (lastTimestamp != button.lastpressedtimestamp) {
+                                if (debug) {
+                                    console.log(`Timestamp of ${this.getAin()}#${button.id} changed from ${lastTimestamp} to ${button.lastpressedtimestamp}`);
+                                }
+                                this.timestamps[button.id] = button.lastpressedtimestamp;
+                                this.emit('press', button.id);
+                            }
+                        } else {
+                            this.timestamps[button.id] = button.lastpressedtimestamp;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public getButtons(): SubButton[] {
+        return this.deviceInfo.buttons?.map(button => { return { ...button } }) ?? [];
     }
 }
 
@@ -500,6 +550,20 @@ export class FritzClient extends EventEmitter {
                     power,
                     energy
                 }
+            }
+
+            if (device?.button) {
+                result.buttons = device?.button.map(button => {
+                    const id = button.$.id;
+                    const name = button.name[0];
+                    const lastpressedtimestamp = parseInt(button.lastpressedtimestamp[0]);
+
+                    return {
+                        id,
+                        name,
+                        lastpressedtimestamp
+                    }
+                });
             }
 
             return result;
