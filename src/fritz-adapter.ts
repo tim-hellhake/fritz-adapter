@@ -12,9 +12,9 @@ import { Adapter, Device, Event, Property } from 'gateway-addon';
 
 import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor } from './fritz-client';
 
-export class SwitchProperty extends Property {
-  constructor(private device: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'state', {
+export class SwitchProperty extends Property<boolean> {
+  constructor(private fritzDect200: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzDect200, 'state', {
       type: 'boolean',
       '@type': 'OnOffProperty',
       title: 'State',
@@ -24,9 +24,8 @@ export class SwitchProperty extends Property {
 
   async setValue(value: boolean) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
+      this.log(`Set value of ${this.fritzDect200.getName()} / ${this.getTitle()} to ${value}`);
+      const ain = this.fritzDect200.deviceInfo.identifier;
 
       if (value === true) {
         await this.client.setSwitchOn(ain);
@@ -35,8 +34,11 @@ export class SwitchProperty extends Property {
         await this.client.setSwitchOff(ain);
         this.log('Set switch off');
       }
+
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
@@ -49,14 +51,14 @@ class FritzDect200 extends Device {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['SmartPlug', 'TemperatureSensor'];
-    this.name = deviceInfo.name;
-    this.description = deviceInfo.productname;
+    this.setTitle(deviceInfo.name);
+    this.setDescription(deviceInfo.productname);
 
     this.switchProperty = new SwitchProperty(this, client, log);
-    this.properties.set(this.switchProperty.name, this.switchProperty);
+    this.addProperty(this.switchProperty);
 
     this.temperatureProperty = new TemperatureProperty(this);
-    this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
+    this.addProperty(this.temperatureProperty);
   }
 
   startPolling(interval: number) {
@@ -76,7 +78,7 @@ class FritzDect200 extends Device {
   }
 }
 
-class TemperatureProperty extends Property {
+class TemperatureProperty extends Property<number> {
   constructor(device: Device) {
     super(device, 'temperature', {
       type: 'number',
@@ -90,9 +92,9 @@ class TemperatureProperty extends Property {
   }
 }
 
-class SetTemperatureProperty extends Property {
-  constructor(private device: FritzThermostat, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'settemperature', {
+class SetTemperatureProperty extends Property<number> {
+  constructor(private fritzThermostat: FritzThermostat, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzThermostat, 'settemperature', {
       '@type': 'LevelProperty',
       type: 'number',
       minimum: 8,
@@ -106,12 +108,13 @@ class SetTemperatureProperty extends Property {
 
   async setValue(value: number) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      super.setValue(value);
-      const ain = this.device.deviceInfo.identifier;
+      this.log(`Set value of ${this.getDevice().getTitle()} / ${this.getTitle()} to ${value}`);
+      const ain = this.fritzThermostat.deviceInfo.identifier;
       await this.client.setTempTarget(ain, value);
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
@@ -124,14 +127,14 @@ class FritzThermostat extends Device {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
-    this.name = deviceInfo.name;
-    this.description = deviceInfo.productname;
+    this.setTitle(deviceInfo.name);
+    this.setDescription(deviceInfo.productname);
 
     this.setTemperatureProperty = new SetTemperatureProperty(this, client, log);
-    this.properties.set(this.setTemperatureProperty.name, this.setTemperatureProperty);
+    this.addProperty(this.setTemperatureProperty);
 
     this.temperatureProperty = new TemperatureProperty(this);
-    this.properties.set(this.temperatureProperty.name, this.temperatureProperty);
+    this.addProperty(this.temperatureProperty);
   }
 
   startPolling(interval: number) {
@@ -150,12 +153,12 @@ class FritzThermostat extends Device {
   }
 }
 
-class OnOffProperty extends Property {
-  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'on', {
+class OnOffProperty extends Property<boolean> {
+  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzColorBulb, 'on', {
       '@type': 'OnOffProperty',
       type: 'boolean',
-      title: 'On',
+      title: 'On'
     });
 
     bulb.on('on', (on: boolean) => {
@@ -165,24 +168,25 @@ class OnOffProperty extends Property {
 
   async setValue(value: boolean) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      super.setValue(value);
+      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setOn(value);
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
 
-class BrightnessProperty extends Property {
-  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'brightness', {
+class BrightnessProperty extends Property<number> {
+  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzColorBulb, 'brightness', {
       '@type': 'BrightnessProperty',
       type: 'integer',
       minimum: 0,
       maximum: 100,
       unit: 'percent',
-      title: 'Brightness',
+      title: 'Brightness'
     });
 
     bulb.on('brightness', (brightness: number) => {
@@ -192,42 +196,44 @@ class BrightnessProperty extends Property {
 
   async setValue(value: number) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      super.setValue(value);
+      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setBrightness(value);
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
 
-class ColorTemperatureProperty extends Property {
-  constructor(private device: FritzColorBulb, private bulb: FritzBulb, temperatures: string[], private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'colorTemperaturePreset', {
+class ColorTemperatureProperty extends Property<string> {
+  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, temperatures: string[], private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzColorBulb, 'colorTemperaturePreset', {
       type: 'string',
       title: 'Color temperature',
       enum: temperatures
     });
 
     bulb.on('colorTemperature', (colorTemperature: number) => {
-      this.setCachedValueAndNotify(colorTemperature);
+      this.setCachedValueAndNotify(`${colorTemperature}`);
     });
   }
 
   async setValue(value: string) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
-      super.setValue(value);
+      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setTemperature({ kelvin: parseInt(value) });
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
 
-class ColorProperty extends Property {
-  constructor(private device: FritzColorBulb, private bulb: FritzBulb, private subColors: { [key: string]: SubColor }, private log: (message?: any, ...optionalParams: any[]) => void) {
-    super(device, 'colorPreset', {
+class ColorProperty extends Property<string> {
+  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private subColors: { [key: string]: SubColor }, private log: (message?: any, ...optionalParams: any[]) => void) {
+    super(fritzColorBulb, 'colorPreset', {
       type: 'string',
       title: 'Color',
       enum: Object.keys(subColors)
@@ -247,15 +253,16 @@ class ColorProperty extends Property {
 
   async setValue(value: string) {
     try {
-      this.log(`Set value of ${this.device.name} / ${this.title} to ${value}`);
+      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
       const color = this.subColors[value];
       if (!color) {
         throw new Error(`Unknown color ${value}`);
       }
-      super.setValue(value);
       await this.bulb.setColor(color);
+      return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
+      return Promise.reject(e);
     }
   }
 }
@@ -270,17 +277,17 @@ class FritzColorBulb extends Device {
     super(adapter, bulb.getAin());
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['Light'];
-    this.name = bulb.getName();
+    this.setTitle(bulb.getName());
 
     this.onOffProperty = new OnOffProperty(this, bulb, log);
-    this.properties.set(this.onOffProperty.name, this.onOffProperty);
+    this.addProperty(this.onOffProperty);
 
     this.brightnessProperty = new BrightnessProperty(this, bulb, log);
-    this.properties.set(this.brightnessProperty.name, this.brightnessProperty);
+    this.addProperty(this.brightnessProperty);
 
     const temperatures = colorDefaults.colorTemperatures.map(x => x.kelvin).map(x => `${x}`);
     this.colorTemperatureProperty = new ColorTemperatureProperty(this, bulb, temperatures, log);
-    this.properties.set(this.colorTemperatureProperty.name, this.colorTemperatureProperty);
+    this.addProperty(this.colorTemperatureProperty);
 
 
     const colors: { [key: string]: SubColor } = {};
@@ -293,11 +300,11 @@ class FritzColorBulb extends Device {
     }
 
     this.colorProperty = new ColorProperty(this, bulb, colors, log);
-    this.properties.set(this.colorProperty.name, this.colorProperty);
+    this.addProperty(this.colorProperty);
   }
 }
 
-class BatteryProperty extends Property {
+class BatteryProperty extends Property<number> {
   constructor(device: Device, fritzDevice: FritzDevice) {
     super(device, 'battery', {
       '@type': 'LevelProperty',
@@ -305,8 +312,7 @@ class BatteryProperty extends Property {
       minimum: 0,
       maximum: 100,
       unit: 'percent',
-      title: 'Battery',
-      readOnly: true
+      title: 'Battery'
     });
 
     fritzDevice.on('battery', (battery: number) => {
@@ -315,7 +321,7 @@ class BatteryProperty extends Property {
   }
 }
 
-class BatterylowProperty extends Property {
+class BatterylowProperty extends Property<boolean> {
   constructor(device: Device, fritzDevice: FritzDevice) {
     super(device, 'batterylow', {
       type: 'boolean',
@@ -330,7 +336,7 @@ class BatterylowProperty extends Property {
   }
 }
 
-class TemperatureSensorProperty extends Property {
+class TemperatureSensorProperty extends Property<number> {
   constructor(device: Device, fritzDevice: FritzTemperatureSensor) {
     super(device, 'temperature', {
       type: 'number',
@@ -349,36 +355,27 @@ class TemperatureSensorProperty extends Property {
 }
 
 export class BasicDevice extends Device {
-  private batteryProperty?: BatteryProperty;
-  private batterylowProperty?: BatterylowProperty;
-
   constructor(adapter: Adapter, button: FritzDevice) {
     super(adapter, button.getAin());
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = [];
-    this.name = button.getName();
+    this.setTitle(button.getName());
 
     if (button.hasBattery()) {
-      this.batteryProperty = new BatteryProperty(this, button);
-      this.properties.set(this.batteryProperty.name, this.batteryProperty);
-
-      this.batterylowProperty = new BatterylowProperty(this, button);
-      this.properties.set(this.batterylowProperty.name, this.batterylowProperty);
+      this.addProperty(new BatteryProperty(this, button));
+      this.addProperty(new BatterylowProperty(this, button));
     }
   }
 }
 
 export class TemperatureSensor extends BasicDevice {
-  private temperatureSensorProperty: TemperatureSensorProperty;
-
   constructor(adapter: Adapter, button: FritzButton) {
     super(adapter, button);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
-    this.name = button.getName();
+    this.setTitle(button.getName());
 
-    this.temperatureSensorProperty = new TemperatureSensorProperty(this, button);
-    this.properties.set(this.temperatureSensorProperty.name, this.temperatureSensorProperty);
+    this.addProperty(new TemperatureSensorProperty(this, button));
   }
 }
 
@@ -388,7 +385,7 @@ export class Button extends TemperatureSensor {
     this['@type'].push('PushButton');
 
     for (const subButton of button.getButtons()) {
-      this.events.set(subButton.id, {
+      this.addEvent(subButton.id, {
         name: subButton.id,
         metadata: {
           '@type': 'PressedEvent',
