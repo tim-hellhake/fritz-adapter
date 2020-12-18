@@ -2,7 +2,7 @@
     "id": "fritz-adapter",
     "short_name": "Fritz!",
     "name": "Fritz!",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "author": "Tim Hellhake",
     "description": "Connect your Fritz! devices",
     "homepage_url": "https://github.com/tim-hellhake/fritz-adapter#readme",
@@ -12,7 +12,7 @@
         "webthings": {
             "exec": "{nodeLoader} {path}",
             "primary_type": "adapter",
-            "strict_min_version": "0.10.0"
+            "strict_min_version": "1.0.0"
         }
     },
     "options": {
