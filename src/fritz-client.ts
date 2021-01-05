@@ -424,7 +424,7 @@ export class FritzClient extends EventEmitter {
     public async getButtons() {
         return (await this.getDeviceInfos())
             .filter(device => device.features.indexOf('Button') > -1)
-            .map(deviceInfo => new FritzButton(this, deviceInfo));
+            .map(deviceInfo => new FritzButton(this, deviceInfo, this.debug));
     }
 
     public async update() {
