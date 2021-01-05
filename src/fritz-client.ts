@@ -441,7 +441,7 @@ export class FritzClient extends EventEmitter {
 
         if (this.debug) {
             console.log(body);
-            console.log(deviceInfos);
+            console.log(JSON.stringify(deviceInfos));
         }
 
         return deviceInfos.devicelist.device.map(device => {
