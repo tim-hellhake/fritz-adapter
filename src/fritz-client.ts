@@ -304,6 +304,7 @@ export class FritzButton extends FritzTemperatureSensor {
                 if (deviceInfo?.buttons) {
                     for (const button of deviceInfo?.buttons) {
                         if (button.id in this.timestamps) {
+                            if(!isNaN(button.lastpressedtimestamp)) {
                             const lastTimestamp = this.timestamps[button.id];
 
                             if (lastTimestamp != button.lastpressedtimestamp) {
@@ -312,6 +313,7 @@ export class FritzButton extends FritzTemperatureSensor {
                                 }
                                 this.timestamps[button.id] = button.lastpressedtimestamp;
                                 this.emit('press', button.id);
+                            }
                             }
                         } else {
                             this.timestamps[button.id] = button.lastpressedtimestamp;
