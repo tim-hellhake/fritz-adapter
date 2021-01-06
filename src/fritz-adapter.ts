@@ -24,7 +24,7 @@ export class SwitchProperty extends Property<boolean> {
 
   async setValue(value: boolean) {
     try {
-      this.log(`Set value of ${this.fritzDect200.getName()} / ${this.getTitle()} to ${value}`);
+      this.log(`Set value of ${this.fritzDect200.getTitle()} / ${this.getTitle()} to ${value}`);
       const ain = this.fritzDect200.deviceInfo.identifier;
 
       if (value === true) {
@@ -168,7 +168,7 @@ class OnOffProperty extends Property<boolean> {
 
   async setValue(value: boolean) {
     try {
-      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
+      this.log(`Set value of ${this.fritzColorBulb.getTitle()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setOn(value);
       return super.setValue(value);
     } catch (e) {
@@ -196,7 +196,7 @@ class BrightnessProperty extends Property<number> {
 
   async setValue(value: number) {
     try {
-      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
+      this.log(`Set value of ${this.fritzColorBulb.getTitle()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setBrightness(value);
       return super.setValue(value);
     } catch (e) {
@@ -221,7 +221,7 @@ class ColorTemperatureProperty extends Property<string> {
 
   async setValue(value: string) {
     try {
-      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
+      this.log(`Set value of ${this.fritzColorBulb.getTitle()} / ${this.getTitle()} to ${value}`);
       await this.bulb.setTemperature({ kelvin: parseInt(value) });
       return super.setValue(value);
     } catch (e) {
@@ -253,7 +253,7 @@ class ColorProperty extends Property<string> {
 
   async setValue(value: string) {
     try {
-      this.log(`Set value of ${this.fritzColorBulb.getName()} / ${this.getTitle()} to ${value}`);
+      this.log(`Set value of ${this.fritzColorBulb.getTitle()} / ${this.getTitle()} to ${value}`);
       const color = this.subColors[value];
       if (!color) {
         throw new Error(`Unknown color ${value}`);
