@@ -6,6 +6,15 @@
 
 'use strict';
 
+import { AddonManagerProxy, Database } from 'gateway-addon';
+import { Config } from './config';
 import { FritzAdapter } from './fritz-adapter';
 
-export = (addonManager: any, manifest: any) => new FritzAdapter(addonManager, manifest);
+export = async function(addonManager: AddonManagerProxy): Promise<void> {
+    const id = 'fritz-adapter';
+    const db = new Database(id, '');
+    await db.open();
+    const config = <Config><unknown> await db.loadConfig();
+    await db.close();
+    new FritzAdapter(addonManager, id, config);
+  }

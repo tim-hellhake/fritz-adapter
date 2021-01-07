@@ -9,6 +9,7 @@
 import { Fritz } from 'fritzapi';
 
 import { Adapter, Device, Event, Property } from 'gateway-addon';
+import { Config } from './config';
 
 import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor } from './fritz-client';
 
@@ -403,8 +404,8 @@ export class Button extends TemperatureSensor {
 export class FritzAdapter extends Adapter {
   private log: (message?: any, ...optionalParams: any[]) => void;
 
-  constructor(addonManager: any, private manifest: any) {
-    super(addonManager, FritzAdapter.name, manifest.name);
+  constructor(addonManager: any, id: string, private config: Config) {
+    super(addonManager, FritzAdapter.name, id);
     addonManager.addAdapter(this);
     const {
       debug,
@@ -412,7 +413,7 @@ export class FritzAdapter extends Adapter {
       password,
       host,
       pollInterval
-    } = manifest.moziot.config;
+    } = config;
 
     if (debug) {
       this.log = console.log;
@@ -461,7 +462,7 @@ export class FritzAdapter extends Adapter {
       host,
       username,
       password
-    } = this.manifest.moziot.config;
+    } = this.config;
 
     const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password, debug);
 
