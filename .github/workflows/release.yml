@@ -15,11 +15,17 @@ jobs:
       uses: actions/checkout@master
     - name: Set release version
       run: echo "RELEASE_VERSION=${GITHUB_REF:10}" >> $GITHUB_ENV
-    - name: Build project
+    - name: Install
       run: |
         npm ci
+    - name: Lint
+      run: |
+        npm run lint
+    - name: Build
+      run: |
         npm run build
-        npm run test
+    - name: Package
+      run: |
         ./package.sh
     - name: Create Release
       id: create_release

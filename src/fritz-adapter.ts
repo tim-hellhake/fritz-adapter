@@ -6,24 +6,28 @@
 
 'use strict';
 
-import { Fritz } from 'fritzapi';
-
-import { Adapter, Device, Event, Property } from 'gateway-addon';
-import { Config } from './config';
-
-import { Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor } from './fritz-client';
+import {Fritz} from 'fritzapi';
+import {Adapter, AddonManagerProxy, Device, Event, Property} from 'gateway-addon';
+import {Config} from './config';
+import {Color, SubColor, ColorDefaults, FritzBulb, FritzClient, FritzButton, FritzDevice, FritzTemperatureSensor} from './fritz-client';
 
 export class SwitchProperty extends Property<boolean> {
-  constructor(private fritzDect200: FritzDect200, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  // eslint-disable-next-line no-unused-vars
+  constructor(
+    private fritzDect200: FritzDect200,
+    // eslint-disable-next-line no-unused-vars
+    private client: Fritz,
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzDect200, 'state', {
       type: 'boolean',
       '@type': 'OnOffProperty',
       title: 'State',
-      description: 'The state of the switch'
+      description: 'The state of the switch',
     });
   }
 
-  async setValue(value: boolean) {
+  async setValue(value: boolean): Promise<boolean> {
     try {
       this.log(`Set value of ${this.fritzDect200.getTitle()} / ${this.getTitle()} to ${value}`);
       const ain = this.fritzDect200.deviceInfo.identifier;
@@ -46,9 +50,15 @@ export class SwitchProperty extends Property<boolean> {
 
 class FritzDect200 extends Device {
   private switchProperty: SwitchProperty;
+
   private temperatureProperty: TemperatureProperty;
 
-  constructor(adapter: Adapter, private client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    adapter: Adapter,
+    private client: Fritz,
+    public deviceInfo: DeviceInfo,
+    // eslint-disable-next-line no-unused-vars
+    log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['SmartPlug', 'TemperatureSensor'];
@@ -88,13 +98,17 @@ class TemperatureProperty extends Property<number> {
       multipleOf: 0.5,
       title: 'Temperature',
       description: 'The ambient temperature',
-      readOnly: true
+      readOnly: true,
     });
   }
 }
 
 class SetTemperatureProperty extends Property<number> {
-  constructor(private fritzThermostat: FritzThermostat, private client: Fritz, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    // eslint-disable-next-line no-unused-vars
+    private fritzThermostat: FritzThermostat, private client: Fritz,
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzThermostat, 'settemperature', {
       '@type': 'LevelProperty',
       type: 'number',
@@ -103,7 +117,7 @@ class SetTemperatureProperty extends Property<number> {
       multipleOf: 0.5,
       unit: 'degree celsius',
       title: 'Set Temperature',
-      description: 'The set temperature'
+      description: 'The set temperature',
     });
   }
 
@@ -122,9 +136,14 @@ class SetTemperatureProperty extends Property<number> {
 
 class FritzThermostat extends Device {
   private setTemperatureProperty: SetTemperatureProperty;
+
   private temperatureProperty: TemperatureProperty;
 
-  constructor(adapter: Adapter, private client: Fritz, public deviceInfo: any, log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    // eslint-disable-next-line no-unused-vars
+    adapter: Adapter, private client: Fritz, public deviceInfo: DeviceInfo,
+    // eslint-disable-next-line no-unused-vars
+    log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(adapter, deviceInfo.identifier);
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['TemperatureSensor'];
@@ -155,11 +174,14 @@ class FritzThermostat extends Device {
 }
 
 class OnOffProperty extends Property<boolean> {
-  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb,
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzColorBulb, 'on', {
       '@type': 'OnOffProperty',
       type: 'boolean',
-      title: 'On'
+      title: 'On',
     });
 
     bulb.on('on', (on: boolean) => {
@@ -180,14 +202,17 @@ class OnOffProperty extends Property<boolean> {
 }
 
 class BrightnessProperty extends Property<number> {
-  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb,
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzColorBulb, 'brightness', {
       '@type': 'BrightnessProperty',
       type: 'integer',
       minimum: 0,
       maximum: 100,
       unit: 'percent',
-      title: 'Brightness'
+      title: 'Brightness',
     });
 
     bulb.on('brightness', (brightness: number) => {
@@ -208,11 +233,14 @@ class BrightnessProperty extends Property<number> {
 }
 
 class ColorTemperatureProperty extends Property<string> {
-  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, temperatures: string[], private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, temperatures: string[],
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzColorBulb, 'colorTemperaturePreset', {
       type: 'string',
       title: 'Color temperature',
-      enum: temperatures
+      enum: temperatures,
     });
 
     bulb.on('colorTemperature', (colorTemperature: number) => {
@@ -223,7 +251,7 @@ class ColorTemperatureProperty extends Property<string> {
   async setValue(value: string) {
     try {
       this.log(`Set value of ${this.fritzColorBulb.getTitle()} / ${this.getTitle()} to ${value}`);
-      await this.bulb.setTemperature({ kelvin: parseInt(value) });
+      await this.bulb.setTemperature({kelvin: parseInt(value)});
       return super.setValue(value);
     } catch (e) {
       this.log(`Could not set value: ${e}`);
@@ -233,16 +261,19 @@ class ColorTemperatureProperty extends Property<string> {
 }
 
 class ColorProperty extends Property<string> {
-  constructor(private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private subColors: { [key: string]: SubColor }, private log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    private fritzColorBulb: FritzColorBulb, private bulb: FritzBulb, private subColors: { [key: string]: SubColor },
+    // eslint-disable-next-line no-unused-vars
+    private log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(fritzColorBulb, 'colorPreset', {
       type: 'string',
       title: 'Color',
-      enum: Object.keys(subColors)
+      enum: Object.keys(subColors),
     });
 
     bulb.on('color', (color: Color) => {
       for (const [name, subColor] of Object.entries(subColors)) {
-        if (subColor.hue == color.hue && subColor.sat == subColor.sat) {
+        if (subColor.hue == color.hue && subColor.sat == color.sat) {
           this.setCachedValueAndNotify(name);
           return;
         }
@@ -270,11 +301,16 @@ class ColorProperty extends Property<string> {
 
 class FritzColorBulb extends Device {
   private onOffProperty: OnOffProperty;
+
   private brightnessProperty: BrightnessProperty;
+
   private colorTemperatureProperty: ColorTemperatureProperty;
+
   private colorProperty: ColorProperty;
 
-  constructor(adapter: Adapter, bulb: FritzBulb, colorDefaults: ColorDefaults, log: (message?: any, ...optionalParams: any[]) => void) {
+  constructor(
+    // eslint-disable-next-line no-unused-vars
+    adapter: Adapter, bulb: FritzBulb, colorDefaults: ColorDefaults, log: (message?: unknown, ...optionalParams: unknown[]) => void) {
     super(adapter, bulb.getAin());
     this['@context'] = 'https://iot.mozilla.org/schemas/';
     this['@type'] = ['Light'];
@@ -286,7 +322,7 @@ class FritzColorBulb extends Device {
     this.brightnessProperty = new BrightnessProperty(this, bulb, log);
     this.addProperty(this.brightnessProperty);
 
-    const temperatures = colorDefaults.colorTemperatures.map(x => x.kelvin).map(x => `${x}`);
+    const temperatures = colorDefaults.colorTemperatures.map((x) => x.kelvin).map((x) => `${x}`);
     this.colorTemperatureProperty = new ColorTemperatureProperty(this, bulb, temperatures, log);
     this.addProperty(this.colorTemperatureProperty);
 
@@ -295,7 +331,7 @@ class FritzColorBulb extends Device {
 
     for (const mainColor of colorDefaults.colors) {
       for (const subColor of mainColor.colors) {
-        const name = `${mainColor.name}_${subColor.sat_index}`
+        const name = `${mainColor.name}_${subColor.sat_index}`;
         colors[name] = subColor;
       }
     }
@@ -314,7 +350,7 @@ class BatteryProperty extends Property<number> {
       maximum: 100,
       unit: 'percent',
       title: 'Battery',
-      readOnly: true
+      readOnly: true,
     });
 
     fritzDevice.on('battery', (battery: number) => {
@@ -329,7 +365,7 @@ class BatterylowProperty extends Property<boolean> {
       type: 'boolean',
       unit: 'batterylow',
       title: 'Battery low',
-      readOnly: true
+      readOnly: true,
     });
 
     fritzDevice.on('batterylow', (batterylow: boolean) => {
@@ -347,7 +383,7 @@ class TemperatureSensorProperty extends Property<number> {
       multipleOf: 0.5,
       title: 'Temperature',
       description: 'The ambient temperature',
-      readOnly: true
+      readOnly: true,
     });
 
     fritzDevice.on('temperature', (temperature: number) => {
@@ -392,19 +428,26 @@ export class Button extends TemperatureSensor {
         metadata: {
           '@type': 'PressedEvent',
           description: 'Button pressed',
-          type: 'string'
-        }
+          type: 'string',
+        },
       });
     }
 
-    button.on('press', buttonId => this.eventNotify(new Event(this, buttonId)));
+    button.on('press', (buttonId) => this.eventNotify(new Event(this, buttonId)));
   }
 }
 
-export class FritzAdapter extends Adapter {
-  private log: (message?: any, ...optionalParams: any[]) => void;
+interface DeviceInfo {
+  productname: string;
+  name: string;
+  identifier: string;
+}
 
-  constructor(addonManager: any, id: string, private config: Config) {
+export class FritzAdapter extends Adapter {
+  // eslint-disable-next-line no-unused-vars
+  private log: (message?: unknown, ...optionalParams: unknown[]) => void;
+
+  constructor(addonManager: AddonManagerProxy, id: string, private config: Config) {
     super(addonManager, FritzAdapter.name, id);
     addonManager.addAdapter(this);
     const {
@@ -412,13 +455,14 @@ export class FritzAdapter extends Adapter {
       username,
       password,
       host,
-      pollInterval
+      pollInterval,
     } = config;
 
     if (debug) {
       this.log = console.log;
     } else {
-      this.log = () => { };
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      this.log = () => {};
     }
 
     if (!username) {
@@ -435,8 +479,8 @@ export class FritzAdapter extends Adapter {
     this.discover(client, pollInterval, debug);
   }
 
-  async discover(client: Fritz, pollInterval: number, debug: boolean) {
-    const deviceInfos = await client.getDeviceList();
+  async discover(client: Fritz, pollInterval: number, debug: boolean): Promise<void> {
+    const deviceInfos: DeviceInfo[] = await client.getDeviceList();
 
     for (const deviceInfo of deviceInfos) {
       if (deviceInfo.productname === 'FRITZ!DECT 200' || deviceInfo.productname === 'FRITZ!DECT 210') {
@@ -461,7 +505,7 @@ export class FritzAdapter extends Adapter {
     const {
       host,
       username,
-      password
+      password,
     } = this.config;
 
     const fritzClient = await FritzClient.login(host || 'http://fritz.box', username, password, debug);
