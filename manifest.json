@@ -1,55 +1,55 @@
 {
-    "id": "fritz-adapter",
-    "short_name": "Fritz!",
-    "name": "Fritz!",
-    "version": "2.3.2",
-    "author": "Tim Hellhake",
-    "description": "Connect your Fritz! devices",
-    "homepage_url": "https://github.com/tim-hellhake/fritz-adapter#readme",
-    "license": "MPL-2.0",
-    "manifest_version": 1,
-    "gateway_specific_settings": {
-        "webthings": {
-            "exec": "{nodeLoader} {path}",
-            "primary_type": "adapter",
-            "strict_min_version": "1.0.0"
-        }
-    },
-    "options": {
-        "default": {
-            "debug": false,
-            "pollInterval": 5
-        },
-        "schema": {
-            "type": "object",
-            "required": [
-                "debug",
-                "username",
-                "password",
-                "pollInterval"
-            ],
-            "properties": {
-                "debug": {
-                    "type": "boolean",
-                    "title": "Enable debug logs"
-                },
-                "username": {
-                    "type": "string",
-                    "title": "The username"
-                },
-                "password": {
-                    "type": "string",
-                    "title": "The password"
-                },
-                "host": {
-                    "type": "string",
-                    "title": "The hostname of your Fritz!Box (default is http://fritz.box)"
-                },
-                "pollInterval": {
-                    "type": "integer",
-                    "title": "The number of seconds between two read requests"
-                }
-            }
-        }
+  "id": "fritz-adapter",
+  "short_name": "Fritz!",
+  "name": "Fritz!",
+  "version": "2.3.3",
+  "author": "Tim Hellhake",
+  "description": "Connect your Fritz! devices",
+  "homepage_url": "https://github.com/tim-hellhake/fritz-adapter#readme",
+  "license": "MPL-2.0",
+  "manifest_version": 1,
+  "gateway_specific_settings": {
+    "webthings": {
+      "exec": "{nodeLoader} {path}",
+      "primary_type": "adapter",
+      "strict_min_version": "1.0.0"
     }
+  },
+  "options": {
+    "default": {
+      "debug": false,
+      "pollInterval": 5
+    },
+    "schema": {
+      "type": "object",
+      "required": [
+        "debug",
+        "username",
+        "password",
+        "pollInterval"
+      ],
+      "properties": {
+        "debug": {
+          "type": "boolean",
+          "title": "Enable debug logs"
+        },
+        "username": {
+          "type": "string",
+          "title": "The username"
+        },
+        "password": {
+          "type": "string",
+          "title": "The password"
+        },
+        "host": {
+          "type": "string",
+          "title": "The hostname of your Fritz!Box (default is http://fritz.box)"
+        },
+        "pollInterval": {
+          "type": "integer",
+          "title": "The number of seconds between two read requests"
+        }
+      }
+    }
+  }
 }
